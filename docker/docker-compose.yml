@@ -1,0 +1,100 @@
+services:
+  service-registry:
+    build:
+      context: ../service-registry
+      dockerfile: Dockerfile
+    image: alb/service-registry:latest
+    container_name: alb-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SERVER_PORT=8761
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - alb-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:8761/actuator/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  gateway:
+    build:
+      context: ../gateway
+      dockerfile: Dockerfile
+    image: alb/gateway:latest
+    container_name: alb-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - EUREKA_HOST=service-registry
+      - EUREKA_PORT=8761
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - alb-net
+
+  worker-1:
+    build:
+      context: ../demo-worker
+      dockerfile: Dockerfile
+    image: alb/demo-worker:latest
+    container_name: alb-worker-1
+    ports:
+      - "8081:8081"
+    environment:
+      - PORT=8081
+      - EUREKA_HOST=service-registry
+      - EUREKA_PORT=8761
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - alb-net
+
+  worker-2:
+    build:
+      context: ../demo-worker
+      dockerfile: Dockerfile
+    image: alb/demo-worker:latest
+    container_name: alb-worker-2
+    ports:
+      - "8082:8082"
+    environment:
+      - PORT=8082
+      - EUREKA_HOST=service-registry
+      - EUREKA_PORT=8761
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - alb-net
+
+  worker-3:
+    build:
+      context: ../demo-worker
+      dockerfile: Dockerfile
+    image: alb/demo-worker:latest
+    container_name: alb-worker-3
+    ports:
+      - "8083:8083"
+    environment:
+      - PORT=8083
+      - EUREKA_HOST=service-registry
+      - EUREKA_PORT=8761
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - alb-net
+
+networks:
+  alb-net:
+    driver: bridge
