@@ -18,6 +18,7 @@ All system specifications, mathematical formulations, benchmarks, and research o
 6. [**Chaos & Fault Injection Suite**](file:///m:/code/projects/automated-lb/docs/06-chaos-and-fault-injection.md) — Programmatic CPU burn, artificial latency/jitter, error bursts, container termination, and adaptation time ($T_{\text{adapt}}$) tracking.
 7. [**Implementation Roadmap & Milestones**](file:///m:/code/projects/automated-lb/docs/07-implementation-roadmap.md) — Phase 1 to Phase 9 engineering plan, module layout, dependencies, and test criteria.
 8. [**Research Paper Outline & Thesis Guide**](file:///m:/code/projects/automated-lb/docs/08-research-paper-outline.md) — 15-section academic paper outline, formal hypotheses ($H_1-H_4$), target venues (IEEE Cloud, ACM SoCC), and figure blueprints.
+9. [**Project Timeline & Sequential Tasks**](file:///m:/code/projects/automated-lb/docs/09-project-timeline-and-tasks.md) — 8-sprint/8-week milestone schedule, critical path dependency graph, task breakdown (T1.1 - T8.5), and risk mitigation.
 
 ---
 

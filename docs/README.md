@@ -19,6 +19,7 @@ This repository contains the design, implementation, evaluation framework, and r
 | [06-chaos-and-fault-injection.md](file:///m:/code/projects/automated-lb/docs/06-chaos-and-fault-injection.md) | **Chaos & Fault Injection Suite** | Degradation simulations (CPU burn, latency spike, memory leak, HTTP 500 bursts), container termination, and adaptation time calculations. |
 | [07-implementation-roadmap.md](file:///m:/code/projects/automated-lb/docs/07-implementation-roadmap.md) | **Implementation Roadmap & Milestones** | Phase 1 through Phase 9 engineering plan, module directory layout, Spring Boot dependency blueprints, and test criteria. |
 | [08-research-paper-outline.md](file:///m:/code/projects/automated-lb/docs/08-research-paper-outline.md) | **Research Paper Outline & Thesis Guide** | 15-section academic paper structure, formal hypothesis formulations, related work positioning, and publication strategy. |
+| [09-project-timeline-and-tasks.md](file:///m:/code/projects/automated-lb/docs/09-project-timeline-and-tasks.md) | **Project Timeline & Sequential Tasks** | 8-sprint milestone plan, dependency graph, task catalog (T1.1–T8.5), and risk mitigation. |
 
 ---
 
