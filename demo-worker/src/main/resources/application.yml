@@ -11,6 +11,8 @@ eureka:
     prefer-ip-address: true
     lease-renewal-interval-in-seconds: 3
     lease-expiration-duration-in-seconds: 6
+    metadata-map:
+      weight: ${EUREKA_METADATA_WEIGHT:1}
   client:
     service-url:
       defaultZone: http://${EUREKA_HOST:localhost}:${EUREKA_PORT:8761}/eureka/

@@ -1,5 +1,7 @@
 package com.alb.gateway.admin;
 
+import com.alb.gateway.routing.adaptive.AdaptiveRoutingConfig;
+import com.alb.gateway.routing.adaptive.MetricCache;
 import com.alb.gateway.routing.engine.InstanceConnectionTracker;
 import com.alb.gateway.routing.engine.RoutingStrategyRegistry;
 import com.alb.gateway.routing.model.RoutingStrategyType;
@@ -24,6 +26,7 @@ class RoutingAdminControllerTests {
     private RoutingStrategyRegistry registry;
     private InstanceConnectionTracker tracker;
     private DiscoveryClient discoveryClient;
+    private AdaptiveRoutingConfig adaptiveRoutingConfig;
 
     @BeforeEach
     void setUp() {
@@ -35,8 +38,10 @@ class RoutingAdminControllerTests {
         tracker = new InstanceConnectionTracker();
         discoveryClient = Mockito.mock(DiscoveryClient.class);
         when(discoveryClient.getServices()).thenReturn(List.of("DEMO-SERVICE"));
+        adaptiveRoutingConfig = new AdaptiveRoutingConfig();
 
-        controller = new RoutingAdminController(registry, tracker, discoveryClient);
+        controller = new RoutingAdminController(
+                registry, tracker, discoveryClient, adaptiveRoutingConfig, new MetricCache());
     }
 
     @Test
@@ -78,5 +83,56 @@ class RoutingAdminControllerTests {
         assertNotNull(response);
         assertEquals(200, response.getStatusCode().value());
         assertEquals(5, tracker.getInstanceWeight("worker-1"));
+    }
+
+    @Test
+    void testAdaptiveWeightsUseDocumentedContract() {
+        ResponseEntity<Map<String, Object>> response = controller.setWeights(Map.of(
+                "cpu", 0.30,
+                "memory", 0.10,
+                "latency", 0.30,
+                "connections", 0.10,
+                "errors", 0.20)).block();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(0.30, adaptiveRoutingConfig.getWeightCpu());
+        assertEquals(0.30, adaptiveRoutingConfig.getWeightLatency());
+    }
+
+    @Test
+    void testRejectedConfigDoesNotMutateLiveConfiguration() {
+        ResponseEntity<Map<String, Object>> response = controller.updateAdaptiveConfig(Map.of(
+                "weightCpu", 0.90)).block();
+
+        assertNotNull(response);
+        assertEquals(400, response.getStatusCode().value());
+        assertEquals(0.25, adaptiveRoutingConfig.getWeightCpu());
+    }
+
+    @Test
+    void testGetRoutingStatusDetailedFields() {
+        ResponseEntity<Map<String, Object>> response = controller.getRoutingStatus().block();
+        assertNotNull(response);
+        Map<String, Object> body = response.getBody();
+        assertNotNull(body);
+        assertTrue(body.containsKey("refreshIntervalMs"));
+        assertTrue(body.containsKey("hysteresisDelta"));
+        assertTrue(body.containsKey("softmaxTemperature"));
+        assertTrue(body.containsKey("weights"));
+    }
+
+    @Test
+    void testPostAdaptiveConfigWithAliases() {
+        ResponseEntity<Map<String, Object>> response = controller.postAdaptiveConfig(Map.of(
+                "refreshIntervalMs", 300,
+                "hysteresisDelta", 0.15,
+                "softmaxTemperature", 0.35)).block();
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertEquals(300, adaptiveRoutingConfig.getPollerIntervalMs());
+        assertEquals(0.15, adaptiveRoutingConfig.getHysteresisThreshold());
+        assertEquals(0.35, adaptiveRoutingConfig.getSoftmaxTemperature());
     }
 }

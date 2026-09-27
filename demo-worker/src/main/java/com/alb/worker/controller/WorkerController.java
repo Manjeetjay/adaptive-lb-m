@@ -1,7 +1,6 @@
 package com.alb.worker.controller;
 
-import io.micrometer.core.instrument.Gauge;
-import io.micrometer.core.instrument.MeterRegistry;
+import com.alb.worker.metrics.WorkerMetricsService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,31 +14,25 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Worker business workload controller providing CPU-bound and I/O-bound simulation endpoints.
  */
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping({"/api/v1", "/api"})
 public class WorkerController {
 
-    private final AtomicInteger activeRequests = new AtomicInteger(0);
+    private final WorkerMetricsService metricsService;
     private final String instanceId;
     private final int serverPort;
 
     public WorkerController(
-            MeterRegistry meterRegistry,
-            @Value("${eureka.instance.instance-id:${spring.application.name}:${server.port}}") String instanceId,
+            WorkerMetricsService metricsService,
+            @Value("${eureka.instance.instance-id:${spring.application.name}:${server.port:8081}}") String instanceId,
             @Value("${server.port:8081}") int serverPort) {
+        this.metricsService = metricsService;
         this.instanceId = instanceId;
         this.serverPort = serverPort;
-
-        // Register custom gauge in Prometheus meter registry
-        Gauge.builder("alb_worker_active_requests", activeRequests, AtomicInteger::get)
-                .description("Number of concurrent active HTTP requests in-flight on this worker instance")
-                .tag("instance_id", instanceId)
-                .register(meterRegistry);
     }
 
     /**
@@ -47,8 +40,8 @@ public class WorkerController {
      */
     @GetMapping("/compute")
     public ResponseEntity<Map<String, Object>> compute(
-            @RequestParam(defaultValue = "100000") int iterations) {
-        activeRequests.incrementAndGet();
+            @RequestParam(name = "iterations", defaultValue = "100000") int iterations) {
+        metricsService.incrementActiveRequests();
         long startTime = System.nanoTime();
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -74,7 +67,7 @@ public class WorkerController {
         } catch (NoSuchAlgorithmException e) {
             throw new RuntimeException("SHA-256 algorithm unavailable", e);
         } finally {
-            activeRequests.decrementAndGet();
+            metricsService.decrementActiveRequests();
         }
     }
 
@@ -83,8 +76,9 @@ public class WorkerController {
      */
     @GetMapping("/io-wait")
     public ResponseEntity<Map<String, Object>> ioWait(
-            @RequestParam(defaultValue = "50") int delayMs) {
-        activeRequests.incrementAndGet();
+            @RequestParam(name = "delayMs", defaultValue = "50") int delayMs) {
+        metricsService.incrementActiveRequests();
+        metricsService.setSimulatedDelayMs(delayMs);
         long startTime = System.nanoTime();
         try {
             if (delayMs > 0) {
@@ -103,7 +97,7 @@ public class WorkerController {
             Thread.currentThread().interrupt();
             return ResponseEntity.status(500).body(Map.of("error", "Interrupted during simulated IO"));
         } finally {
-            activeRequests.decrementAndGet();
+            metricsService.decrementActiveRequests();
         }
     }
 
@@ -122,7 +116,10 @@ public class WorkerController {
                 "serverPort", serverPort,
                 "hostname", host,
                 "jvmUptimeMs", ManagementFactory.getRuntimeMXBean().getUptime(),
-                "activeRequests", activeRequests.get()
+                "activeRequests", metricsService.getActiveRequests(),
+                "cpuUsage", metricsService.getCpuUsage(),
+                "memoryRatio", metricsService.getMemoryRatio(),
+                "simulatedDelayMs", metricsService.getSimulatedDelayMs()
         ));
     }
 

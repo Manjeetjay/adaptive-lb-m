@@ -50,6 +50,7 @@ services:
       - PORT=8081
       - EUREKA_HOST=service-registry
       - EUREKA_PORT=8761
+      - EUREKA_METADATA_WEIGHT=5
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       service-registry:
@@ -69,6 +70,7 @@ services:
       - PORT=8082
       - EUREKA_HOST=service-registry
       - EUREKA_PORT=8761
+      - EUREKA_METADATA_WEIGHT=3
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       service-registry:
@@ -88,6 +90,7 @@ services:
       - PORT=8083
       - EUREKA_HOST=service-registry
       - EUREKA_PORT=8761
+      - EUREKA_METADATA_WEIGHT=1
       - SPRING_PROFILES_ACTIVE=docker
     depends_on:
       service-registry:
@@ -95,6 +98,43 @@ services:
     networks:
       - alb-net
 
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: alb-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    depends_on:
+      - gateway
+      - worker-1
+      - worker-2
+      - worker-3
+    networks:
+      - alb-net
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: alb-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    networks:
+      - alb-net
+
 networks:
   alb-net:
     driver: bridge
+

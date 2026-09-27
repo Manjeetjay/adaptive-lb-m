@@ -1,6 +1,7 @@
 package com.alb.worker;
 
 import com.alb.worker.controller.WorkerController;
+import com.alb.worker.metrics.WorkerMetricsService;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,11 +13,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class WorkerControllerTests {
 
+    private WorkerMetricsService metricsService;
     private WorkerController controller;
 
     @BeforeEach
     void setUp() {
-        controller = new WorkerController(new SimpleMeterRegistry(), "test-worker:8081", 8081);
+        metricsService = new WorkerMetricsService(new SimpleMeterRegistry(), "test-worker:8081");
+        controller = new WorkerController(metricsService, "test-worker:8081", 8081);
     }
 
     @Test
@@ -58,5 +61,9 @@ class WorkerControllerTests {
         ResponseEntity<Map<String, Object>> response = controller.info();
         assertNotNull(response);
         assertEquals("test-worker:8081", response.getBody().get("instanceId"));
+        assertTrue(response.getBody().containsKey("activeRequests"));
+        assertTrue(response.getBody().containsKey("cpuUsage"));
+        assertTrue(response.getBody().containsKey("memoryRatio"));
+        assertTrue(response.getBody().containsKey("simulatedDelayMs"));
     }
 }

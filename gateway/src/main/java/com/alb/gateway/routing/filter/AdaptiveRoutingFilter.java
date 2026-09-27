@@ -1,11 +1,12 @@
 package com.alb.gateway.routing.filter;
 
+import com.alb.gateway.routing.adaptive.MetricCache;
 import com.alb.gateway.routing.engine.InstanceConnectionTracker;
 import com.alb.gateway.routing.engine.RoutingStrategyRegistry;
 import com.alb.gateway.routing.model.InstanceMetricsSnapshot;
 import com.alb.gateway.routing.strategy.RoutingStrategy;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -24,7 +25,7 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Global reactive filter that intercepts requests to microservices and resolves the destination
@@ -39,18 +40,24 @@ public class AdaptiveRoutingFilter implements GlobalFilter, Ordered {
     private final DiscoveryClient discoveryClient;
     private final RoutingStrategyRegistry strategyRegistry;
     private final InstanceConnectionTracker connectionTracker;
-    private final Counter routeDecisionsCounter;
+    private final Timer routingEvalTimer;
+    private final MetricCache metricCache;
+    private final MeterRegistry meterRegistry;
 
     public AdaptiveRoutingFilter(
             DiscoveryClient discoveryClient,
             RoutingStrategyRegistry strategyRegistry,
             InstanceConnectionTracker connectionTracker,
-            MeterRegistry meterRegistry) {
+            MeterRegistry meterRegistry,
+            MetricCache metricCache) {
         this.discoveryClient = discoveryClient;
         this.strategyRegistry = strategyRegistry;
         this.connectionTracker = connectionTracker;
-        this.routeDecisionsCounter = Counter.builder("alb_gateway_route_decisions_total")
-                .description("Total number of routing decisions made by the gateway")
+        this.metricCache = metricCache;
+        this.meterRegistry = meterRegistry;
+        this.routingEvalTimer = Timer.builder("alb_gateway_routing_eval_duration_seconds")
+                .description("Processing time taken by RoutingStrategy.select()")
+                .publishPercentiles(0.5, 0.95, 0.99)
                 .register(meterRegistry);
     }
 
@@ -78,13 +85,13 @@ public class AdaptiveRoutingFilter implements GlobalFilter, Ordered {
             return Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "No instances available for service: " + serviceId));
         }
 
-        List<String> instanceIds = instances.stream()
-                .map(i -> i.getInstanceId() != null ? i.getInstanceId() : i.getUri().toString())
-                .collect(Collectors.toList());
+        Map<String, InstanceMetricsSnapshot> metricsMap = metricCache.buildMetricsMap();
 
-        Map<String, InstanceMetricsSnapshot> metricsMap = connectionTracker.buildMetricsMap(instanceIds);
         RoutingStrategy strategy = strategyRegistry.getActiveStrategy();
+
+        long startEval = System.nanoTime();
         ServiceInstance chosen = strategy.select(instances, metricsMap);
+        routingEvalTimer.record(System.nanoTime() - startEval, TimeUnit.NANOSECONDS);
 
         if (chosen == null) {
             return Mono.error(new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Routing strategy failed to select instance"));
@@ -94,7 +101,10 @@ public class AdaptiveRoutingFilter implements GlobalFilter, Ordered {
 
         // Increment active connection count
         connectionTracker.incrementConnection(chosenId);
-        routeDecisionsCounter.increment();
+        meterRegistry.counter("alb_gateway_route_decisions_total",
+                        "strategy", strategy.getType().name(),
+                        "target_instance", chosenId)
+                .increment();
 
         // Reconstruct destination URL: http://chosenHost:chosenPort/originalPath
         URI originalUri = exchange.getRequest().getURI();
@@ -119,4 +129,5 @@ public class AdaptiveRoutingFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         return FILTER_ORDER;
     }
+
 }
