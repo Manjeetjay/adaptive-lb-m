@@ -88,3 +88,9 @@ ENV/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Experiment and benchmark raw data
+experiments/results/raw/*.json
+experiments/results/raw/*.csv
+!experiments/results/raw/.gitkeep
+

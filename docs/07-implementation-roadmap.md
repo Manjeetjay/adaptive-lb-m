@@ -118,13 +118,13 @@ Phase 1 ──▶ Phase 2 ──▶ Phase 3 ──▶ Phase 4 ──▶ Phase 5 
 
 ---
 
-### Phase 7: Automated k6 Benchmark Harness
+### Phase 7: Automated k6 Benchmark Harness [COMPLETED]
 - **Goal:** Automate load generation across all 7 experimental scenarios.
 - **Tasks:**
-  1. Write k6 JavaScript scripts for Scenarios 1–7.
+  1. Write k6 JavaScript scripts for Scenarios 1–7 (`experiments/scenarios/exp1_baseline.js` through `exp7_weight_sensitivity.js` and `config.js`). [DONE]
   2. Write Python orchestrator (`orchestrator.py`) to automate sequential execution:
-     - Select algorithm $\to$ Start k6 $\to$ Trigger chaos $\to$ Collect metrics $\to$ Reset state.
-- **Acceptance Criteria:** Orchestrator executes a multi-stage benchmark autonomously and exports raw execution logs.
+     - Select algorithm $\to$ Start k6 $\to$ Trigger chaos $\to$ Collect metrics $\to$ Reset state. [DONE]
+- **Acceptance Criteria:** Orchestrator executes a multi-stage benchmark autonomously and exports raw execution logs. [VERIFIED]
 
 ---
 

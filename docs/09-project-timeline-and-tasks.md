@@ -113,17 +113,17 @@ flowchart TD
 
 ---
 
-### 📅 Sprint 6: Load Generation & Automated Testbed Orchestration
+### 📅 Sprint 6: Load Generation & Automated Testbed Orchestration [COMPLETED]
 **Timeline:** Days 36 – 42  
 **Primary Deliverable:** End-to-end automated testing harness executing k6 load profiles and chaos triggers synchronously.
 
-| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria |
-| :--- | :--- | :--- | :--- |
-| **T6.1** | Develop k6 script for Scenario 1 (Baseline Steady-State: 150 req/s, 10 min). | T1.4 | `k6 run exp1.js` executes reliably with zero test errors. |
-| **T6.2** | Develop k6 script for Scenario 2 (Scalability Curve: $100 \to 3000$ req/s steps). | T1.4 | Step-wise load profile generates smooth ramp-up curves. |
-| **T6.3** | Develop k6 script for Scenario 3 (Heterogeneous Degradation: 600 req/s + fault injection). | T5.2, T6.1 | Coordinated fault injection and traffic generation script. |
-| **T6.4** | Develop k6 scripts for Scenarios 4 & 5 (Traffic Burst 3500 req/s & Container Termination). | T5.5, T6.1 | Replicable burst and crash scenarios completed. |
-| **T6.5** | Write Python master test orchestrator (`experiments/orchestrator.py`). | T2.5, T5.4, T6.1-T6.4 | Single command runs entire test matrix autonomously and logs results to CSV. |
+| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **T6.1** | Develop k6 script for Scenario 1 (Baseline Steady-State: 150 req/s, 10 min). | T1.4 | `k6 run exp1.js` executes reliably with zero test errors. | **DONE** |
+| **T6.2** | Develop k6 script for Scenario 2 (Scalability Curve: $100 \to 3000$ req/s steps). | T1.4 | Step-wise load profile generates smooth ramp-up curves. | **DONE** |
+| **T6.3** | Develop k6 script for Scenario 3 (Heterogeneous Degradation: 600 req/s + fault injection). | T5.2, T6.1 | Coordinated fault injection and traffic generation script. | **DONE** |
+| **T6.4** | Develop k6 scripts for Scenarios 4 & 5 (Traffic Burst 3500 req/s & Container Termination). | T5.5, T6.1 | Replicable burst and crash scenarios completed. | **DONE** |
+| **T6.5** | Write Python master test orchestrator (`experiments/orchestrator.py`). | T2.5, T5.4, T6.1-T6.4 | Single command runs entire test matrix autonomously and logs results to CSV. | **DONE** |
 
 ---
 
