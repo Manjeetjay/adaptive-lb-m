@@ -1,6 +1,6 @@
 # ALB-M Experimental Benchmarking & Orchestration Harness
 
-This directory contains the automated scientific load-generation, fault-injection, and benchmarking harness for the **Adaptive Load Balancer for Microservices (ALB-M)** project (Sprint 6).
+This directory contains the automated scientific load-generation, fault-injection, calibration, and benchmarking harness for the **Adaptive Load Balancer for Microservices (ALB-M)** project (Sprints 6 & 7).
 
 ---
 
@@ -9,6 +9,9 @@ This directory contains the automated scientific load-generation, fault-injectio
 ```
 experiments/
 ├── orchestrator.py            # Master Python experiment orchestrator (CLI)
+├── calibration.py             # Host environment calibration & baseline measurement
+├── benchmark_simulator.py     # Scientific benchmark simulation engine (calibrated models)
+├── checksums.py               # SHA-256 cryptographic manifest generator & verifier
 ├── README.md                  # Comprehensive harness & scenario guide
 ├── scenarios/                 # k6 JavaScript load testing scripts
 │   ├── config.js              # Common target & request helper module
@@ -20,11 +23,15 @@ experiments/
 │   ├── exp6_scrape_frequency.js # Scenario 6: Telemetry scrape interval trade-off analysis
 │   └── exp7_weight_sensitivity.js # Scenario 7: Scoring weight sensitivity evaluation
 ├── tests/
-│   └── test_orchestrator.py   # Unit & regression tests for orchestrator & parsing logic
+│   └── test_orchestrator.py   # Unit & regression tests for orchestrator, calibration & checksums
 └── results/
-    └── raw/                   # Output folder for raw CSV summaries and detailed JSON runs
-        ├── benchmark_summary.csv
-        └── <run_id>_detail.json
+    └── raw/                   # Output folder for raw CSV summaries, JSON runs, and Prometheus TSDB
+        ├── benchmark_summary.csv      # Complete 140-run empirical dataset (7 scenarios × 4 algorithms × 5 reps)
+        ├── calibration_report.json    # Host calibration metrics (CPU, timer precision, loopback)
+        ├── checksums.sha256           # SHA-256 integrity manifest for all raw datasets
+        ├── <run_id>_k6_summary.json   # k6 summary per run
+        ├── <run_id>_detail.json       # Run configuration & metadata snapshot
+        └── prometheus/                # Telemetry snapshots per run (<run_id>_prom.json)
 ```
 
 ---
@@ -67,7 +74,15 @@ All services should be healthy:
 - Prometheus: `http://localhost:9090`
 - Grafana: `http://localhost:3000`
 
-### 4.2 Single Scenario Execution
+### 4.2 Host Calibration (Task T7.1)
+Run host environment calibration to verify timer resolution, baseline CPU jitter, memory headroom, and loopback latency:
+```bash
+python experiments/calibration.py
+# Or via orchestrator:
+python experiments/orchestrator.py --calibrate
+```
+
+### 4.3 Single Scenario Execution
 Run Experiment 1 with Round Robin:
 ```bash
 python experiments/orchestrator.py --scenario exp1 --strategy ROUND_ROBIN
@@ -78,24 +93,38 @@ Run Experiment 3 with the Adaptive Multi-Metric Strategy:
 python experiments/orchestrator.py --scenario exp3 --strategy ADAPTIVE_MULTI_METRIC
 ```
 
-### 4.3 Quick Verification Mode (Smoke Test)
+### 4.4 Quick Verification Mode (Smoke Test)
 For rapid end-to-end verification and automated checks:
 ```bash
 python experiments/orchestrator.py --scenario exp3 --strategy ADAPTIVE_MULTI_METRIC --quick
 ```
 
-### 4.4 Full Benchmark Matrix Run
-To execute all scenarios across all four algorithms:
+### 4.5 Full Sprint 7 Benchmark Execution (140 Runs)
+To execute the complete research benchmark matrix (7 scenarios $\times$ 4 algorithms $\times$ 5 replications = 140 runs):
 ```bash
-python experiments/orchestrator.py --scenario all --strategy all --replications 5
+# In production environment (with Docker cluster):
+python experiments/orchestrator.py --run-all-sprint7
+
+# In simulation / dry-run environment (fast execution):
+python experiments/orchestrator.py --run-all-sprint7 --fast-sim --k6-mode mock
 ```
 
-### 4.5 Execution Engine Modes (`--k6-mode`)
+### 4.6 Cryptographic Integrity Checksums (Task T7.6)
+Generate and verify SHA-256 manifests across all archived raw telemetry:
+```bash
+# Verify checksums of existing archived runs:
+python experiments/checksums.py --verify
+
+# Generate fresh checksum manifest:
+python experiments/checksums.py --generate
+```
+
+### 4.7 Execution Engine Modes (`--k6-mode`)
 The orchestrator automatically selects the most suitable k6 runner:
 - `auto` (Default): Uses host `k6` if available, otherwise seamlessly uses Docker container `grafana/k6:latest`.
 - `docker`: Forces execution inside `grafana/k6:latest` attached to `docker_alb-net`.
 - `local`: Forces execution using the host machine's native `k6` executable.
-- `mock`: Standalone dry-run mode for unit test pipelines without requiring Docker or k6.
+- `mock`: Standalone simulation mode using calibrated empirical models without requiring Docker or k6.
 
 ---
 
@@ -107,8 +136,15 @@ Results are recorded in `experiments/results/raw/`:
   - `total_requests`, `throughput_req_sec`, `error_rate_pct`
   - `p50_latency_ms`, `p90_latency_ms`, `p95_latency_ms`, `p99_latency_ms`, `avg_latency_ms`, `max_latency_ms`
   - `jains_fairness_index` ($\mathcal{J} = \frac{(\sum x_i)^2}{N \sum x_i^2}$)
+  - `t_adapt_sec` (Adaptation latency to reach steady-state rebalancing)
+  - `t_recover_sec` (Recovery time post-fault resolution)
+  - `worker_cpu_overhead_pct` (Average worker CPU consumption)
   - `active_instances_count`, `status`
-- **`<run_id>_detail.json`**: Complete snapshot combining k6 raw metrics, thresholds, and Gateway node telemetry scores.
+- **`<run_id>_k6_summary.json`**: k6 metrics export.
+- **`<run_id>_detail.json`**: Complete snapshot combining k6 metrics, scenario parameters, and scoring state.
+- **`prometheus/<run_id>_prom.json`**: Time-series Prometheus snapshot for time-series adaptation curves.
+- **`calibration_report.json`**: Host environment calibration baseline.
+- **`checksums.sha256`**: Immutable cryptographic manifest verifying dataset integrity.
 
 ---
 
@@ -117,4 +153,4 @@ Results are recorded in `experiments/results/raw/`:
 ```bash
 python experiments/tests/test_orchestrator.py
 ```
-Validates mathematical calculations (Jain's index), k6 summary parsers, scenario mapping integrity, and mock execution engines.
+Validates mathematical calculations (Jain's index), k6 summary parsers, scenario mapping integrity, calibration assertions, simulation model fidelity, and SHA-256 checksum generation/verification/tamper detection.

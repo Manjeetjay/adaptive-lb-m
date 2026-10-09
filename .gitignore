@@ -90,7 +90,11 @@ ENV/
 Thumbs.db
 
 # Experiment and benchmark raw data
+experiments/results/raw/**/*.json
 experiments/results/raw/*.json
 experiments/results/raw/*.csv
 !experiments/results/raw/.gitkeep
+!experiments/results/raw/benchmark_summary.csv
+!experiments/results/raw/calibration_report.json
+!experiments/results/raw/checksums.sha256
 

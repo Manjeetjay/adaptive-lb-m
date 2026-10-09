@@ -1,0 +1,31 @@
+{
+  "calibration_timestamp": "2026-10-09T14:16:23.222182",
+  "task_id": "T7.1",
+  "status": "CALIBRATION_STABLE",
+  "system_telemetry": {
+    "os_name": "nt",
+    "platform": "win32",
+    "python_version": "3.14.8",
+    "cpu_cores_logical": 12,
+    "timestamp": "2026-10-09T14:16:21.916212",
+    "total_memory_gb": 7.42,
+    "avail_memory_gb": 1.28,
+    "memory_load_pct": 82
+  },
+  "timer_precision": {
+    "target_sleep_ms": 5.0,
+    "avg_sleep_measured_ms": 5.364,
+    "max_jitter_ms": 0.93,
+    "timer_resolution_ns": 1e-07
+  },
+  "cpu_baseline": {
+    "loop_duration_ms": 5.121,
+    "loop_jitter_ms": 0.834,
+    "baseline_stable": true
+  },
+  "network_loopback": {
+    "loopback_ok": true,
+    "roundtrip_ms": 2.245
+  },
+  "recommendation": "Host environment ready for scientific benchmarking"
+}

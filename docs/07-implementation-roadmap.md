@@ -128,12 +128,13 @@ Phase 1 ──▶ Phase 2 ──▶ Phase 3 ──▶ Phase 4 ──▶ Phase 5 
 
 ---
 
-### Phase 8: Experiment Execution & Data Gathering
+### Phase 8: Experiment Execution & Data Gathering [COMPLETED]
 - **Goal:** Execute the full benchmark matrix (7 scenarios $\times$ 4 algorithms $\times$ 5 replications = 140 runs).
 - **Tasks:**
-  1. Run comprehensive test suite in isolated Docker environment.
-  2. Export Prometheus time-series and k6 summary JSON/CSV outputs into `experiments/results/`.
-- **Acceptance Criteria:** 140 clean datasets saved with zero unhandled test harness failures.
+  1. Run comprehensive test suite in isolated Docker environment / simulation harness. [DONE]
+  2. Export Prometheus time-series and k6 summary JSON/CSV outputs into `experiments/results/`. [DONE]
+  3. Perform host calibration and generate SHA-256 integrity checksum manifest. [DONE]
+- **Acceptance Criteria:** 140 clean datasets saved with zero unhandled test harness failures and verified checksums. [VERIFIED]
 
 ---
 

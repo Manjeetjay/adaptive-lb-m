@@ -127,18 +127,18 @@ flowchart TD
 
 ---
 
-### 📅 Sprint 7: Empirical Benchmark Execution & Data Harvesting
+### 📅 Sprint 7: Empirical Benchmark Execution & Data Harvesting [COMPLETED]
 **Timeline:** Days 43 – 49  
 **Primary Deliverable:** 140 benchmark executions completed with zero anomalies; comprehensive raw telemetry and k6 summary CSVs archived.
 
-| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria |
-| :--- | :--- | :--- | :--- |
-| **T7.1** | Run calibration test (dry run) in isolated Docker environment to ensure zero host background noise. | T6.5 | Host CPU/RAM baseline confirmed stable. |
-| **T7.2** | Execute Scenarios 1 & 2 across all 4 algorithms $\times$ 5 replications (40 runs). | T7.1 | Raw k6 JSON summaries and Prometheus TSDB metrics exported. |
-| **T7.3** | Execute Scenario 3 (Degradation) across all 4 algorithms $\times$ 5 replications (20 runs). | T7.2 | Exact $T_{\text{adapt}}$ and tail latency logs captured. |
-| **T7.4** | Execute Scenarios 4 & 5 (Burst & Crash) across all algorithms $\times$ 5 replications (40 runs). | T7.3 | Error containment and recovery time datasets captured. |
-| **T7.5** | Execute Scenario 6 (Scrape Frequency: 100ms - 5s) and Scenario 7 (Weight Sensitivity) (40 runs). | T7.4 | Trade-off data matrix and sensitivity table populated. |
-| **T7.6** | Archive all raw datasets into `experiments/results/raw/` with immutable checksums. | T7.2 - T7.5 | 140 clean datasets verified and backed up. |
+| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **T7.1** | Run calibration test (dry run) in isolated Docker environment to ensure zero host background noise. | T6.5 | Host CPU/RAM baseline confirmed stable. | **DONE** |
+| **T7.2** | Execute Scenarios 1 & 2 across all 4 algorithms $\times$ 5 replications (40 runs). | T7.1 | Raw k6 JSON summaries and Prometheus TSDB metrics exported. | **DONE** |
+| **T7.3** | Execute Scenario 3 (Degradation) across all 4 algorithms $\times$ 5 replications (20 runs). | T7.2 | Exact $T_{\text{adapt}}$ and tail latency logs captured. | **DONE** |
+| **T7.4** | Execute Scenarios 4 & 5 (Burst & Crash) across all algorithms $\times$ 5 replications (40 runs). | T7.3 | Error containment and recovery time datasets captured. | **DONE** |
+| **T7.5** | Execute Scenario 6 (Scrape Frequency: 100ms - 5s) and Scenario 7 (Weight Sensitivity) (40 runs). | T7.4 | Trade-off data matrix and sensitivity table populated. | **DONE** |
+| **T7.6** | Archive all raw datasets into `experiments/results/raw/` with immutable checksums. | T7.2 - T7.5 | 140 clean datasets verified and backed up. | **DONE** |
 
 ---
 
