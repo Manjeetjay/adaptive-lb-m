@@ -142,17 +142,17 @@ flowchart TD
 
 ---
 
-### 📅 Sprint 8: Statistical Analysis, Data Visualization & Paper Writing
+### 📅 Sprint 8: Statistical Analysis, Data Visualization, Interactive Frontend & Paper Writing
 **Timeline:** Days 50 – 56  
-**Primary Deliverable:** Publication-grade academic paper draft, LaTeX source, and high-resolution figures.
+**Primary Deliverable:** Publication-grade academic paper draft, LaTeX source, high-resolution figures, and an interactive React + Vite research dashboard.
 
-| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria |
-| :--- | :--- | :--- | :--- |
-| **T8.1** | Build Python analysis script (`experiments/analysis/compute_stats.py`) using Pandas & SciPy. | T7.6 | Automated calculation of mean, median, $P_{95}, P_{99}$, Jain's index, and $T_{\text{adapt}}$. |
-| **T8.2** | Run normality checks (Shapiro-Wilk) and non-parametric hypothesis tests (Wilcoxon Signed-Rank). | T8.1 | Formal $p$-values and Cliff's $\delta$ effect sizes generated for Hypotheses $H_1 - H_4$. |
-| **T8.3** | Generate publication figures (Latency CDF curves, box plots, adaptation timeline curves, radar chart). | T8.1 | High-DPI vector PDF/PNG charts generated in `experiments/results/figures/`. |
-| **T8.4** | Draft Sections 1–7 of the research paper (Introduction, Background, Architecture, Algorithm, Methodology). | T8.3 | Academic draft conforming to IEEE/ACM 2-column format. |
-| **T8.5** | Draft Sections 8–15 (Empirical Evaluation, Trade-off, Discussion, Limitations, Conclusion). | T8.2, T8.4 | Complete 10–12 page academic research paper draft ready for peer review. |
+| Task ID | Task Description | Dependencies | Deliverable / Acceptance Criteria | Status |
+| :--- | :--- | :--- | :--- | :--- |
+| **T8.1** | Build Python analysis script (`experiments/analysis/compute_stats.py`). | T7.6 | Automated calculation of mean, median, $P_{95}, P_{99}$, Jain's index, and $T_{\text{adapt}}$. | **DONE** |
+| **T8.2** | Run normality checks and non-parametric hypothesis tests (Wilcoxon Signed-Rank, Cliff's $\delta$). | T8.1 | Formal $p$-values and effect sizes confirming Hypotheses $H_1 - H_4$. | **DONE** |
+| **T8.3** | Generate publication figures (Latency CDF curves, box plots, adaptation timeline curves, radar chart). | T8.1 | High-DPI charts & interactive Chart.js visualizations created. | **DONE** |
+| **T8.4** | Implement Interactive Frontend Dashboard (`frontend/`) in React + Vite + Chart.js. | T8.1 - T8.3 | Dark-mode SPA with 140-run explorer, scientific figures, live Gateway console, and chaos triggers. | **DONE** |
+| **T8.5** | Draft Academic Research Paper (Sections 1–15, IEEE/ACM style draft & LaTeX template). | T8.2, T8.3 | Complete 10–12 page academic research paper draft ready for review. | **DONE** |
 
 ---
 
